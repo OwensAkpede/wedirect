@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "we-quiz-a6302": {
+      "hosting": {
+        "wedirect": [
+          "wedirect"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
