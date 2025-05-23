@@ -2,46 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WeDirect</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body class="bg-white text-gray-800 flex items-center justify-center min-h-screen font-sans">
+<body class="bg-gradient-to-br from-white via-gray-50 to-gray-100 text-gray-800 min-h-screen flex items-center justify-center">
 
-  <div id="app" class="text-center max-w-md mx-auto p-8 shadow-xl rounded-2xl border border-gray-100">
-    <h1 class="text-4xl font-bold text-blue-600">WeDirect</h1>
-    <p class="text-gray-500 mt-2">Redirecting you shortly...</p>
-    <div id="redirectInfo" class="mt-6 space-y-4 hidden">
-      <img id="favicon" src="" alt="Favicon" class="w-16 h-16 mx-auto rounded-md shadow-md" />
-      <p id="urlText" class="text-blue-500 text-lg break-words"></p>
+  <div id="app" class="w-full max-w-xl mx-auto p-6 sm:p-10 bg-white/70 backdrop-blur-lg  rounded-3xl border border-gray-200 text-center">
+    <h1 class="text-4xl font-bold text-indigo-600">WeDirect</h1>
+    <p class="mt-2 text-gray-500">Taking you where you want to go…</p>
+
+    <div id="redirectInfo" class="mt-8 space-y-6 hidden">
+      <img id="banner" src="" alt="Banner" class="rounded-xl shadow-lg w-full max-h-40 object-cover mx-auto" />
+      <div class="flex items-center justify-center gap-4">
+        <img id="favicon" src="" alt="Favicon" class="w-10 h-10 rounded-md shadow" />
+        <p id="urlText" class="text-indigo-500 font-medium break-all text-sm sm:text-base"></p>
+      </div>
+      <div class="text-xs text-gray-400 animate-pulse">Redirecting in 3 seconds...</div>
     </div>
   </div>
 
   <script>
-    window.onload = () => {
+    async function getOGImage(url) {
+      try {
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
+        const data = await res.json();
+        console.log(data);
+        
+        return data?.data?.image?.url;
+      } catch {
+        return null;
+      }
+    }
+
+    window.onload = async () => {
       const rawPath = decodeURIComponent(window.location.pathname.slice(1));
       const rawHash = decodeURIComponent(window.location.hash.slice(1));
       const url = rawPath || rawHash;
-      console.log(url);
-      
 
       const isValidUrl = /^https?:\/\/[^ "]+$/.test(url);
 
+      const app = document.getElementById("app");
+
       if (!url) {
-        document.getElementById("app").innerHTML = `
-          <h1 class="text-4xl font-bold text-blue-600">WeDirect</h1>
-          <p class="text-gray-500 mt-2">To use this tool, visit:</p>
-          <code class="block mt-4 bg-blue-50 text-blue-600 p-2 rounded-md">http://${location.host}/https://example.com</code>
-          <p class="text-sm text-gray-400 mt-2">or use hash format:</p>
-          <code class="block mt-1 bg-blue-50 text-blue-600 p-2 rounded-md">http://${location.host}/#https://example.com</code>
+        app.innerHTML = `
+          <h1 class="text-4xl font-bold text-indigo-600">WeDirect</h1>
+          <p class="mt-2 text-gray-500">Paste a full URL into the path or hash:</p>
+          <code class="block mt-4 bg-indigo-50 text-indigo-600 p-2 rounded-md text-sm">http://${location.host}/https://example.com</code>
+          <p class="text-sm text-gray-400 mt-2">or</p>
+          <code class="block mt-1 bg-indigo-50 text-indigo-600 p-2 rounded-md text-sm">http://${location.host}/#https://example.com</code>
         `;
         return;
       }
 
       if (!isValidUrl) {
-        document.getElementById("app").innerHTML = `
+        app.innerHTML = `
           <h1 class="text-4xl font-bold text-red-500">Invalid URL</h1>
-          <p class="text-gray-500 mt-2">Only full http/https URLs are supported.</p>
+          <p class="mt-2 text-gray-500">Must start with http:// or https://</p>
         `;
         return;
       }
@@ -49,6 +70,9 @@
       document.getElementById("redirectInfo").classList.remove("hidden");
       document.getElementById("urlText").textContent = url;
       document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
+
+      const bannerUrl = await getOGImage(url);
+      document.getElementById("banner").src = bannerUrl || "https://via.placeholder.com/600x150?text=Preview+Unavailable";
 
       setTimeout(() => {
         // window.location.href = url;
