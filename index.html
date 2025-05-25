@@ -1,143 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WeDirect</title>
-  <link href="https://cdn.jsdelivr.net/npm/@primer/css@20.8.0/dist/primer.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
     body {
-      background-color: #0d1117;
-      color: #c9d1d9;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-      padding-top: 50px;
+      background: radial-gradient(circle at 50% 20%, #ffffff, #e0f7fa, #fce4ec);
+      background-attachment: fixed;
+      animation: pulseBG 20s ease-in-out infinite;
+      color: #3e3e3e;
     }
-    .container {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 1rem;
+    @keyframes pulseBG {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.03); }
     }
-    .banner {
-          min-width: 180px;
-      height: 180px;
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      background-size: cover;
-      background-position: center;
+    .glow-ring {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease-in-out;
     }
-    .box {
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 1.5rem;
-          display: flex
-;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: center;
+    .shimmer {
+      background: linear-gradient(90deg, #ffffff 25%, #f0f0f0 50%, #ffffff 75%);
+      background-size: 400% 100%;
+      animation: shimmer 2s infinite;
     }
-    .text-small { font-size: 0.875rem; }
-    .fade-in {
-      animation: fadeIn 0.4s ease-in-out forwards;
-      opacity: 0;
-    }
-    @keyframes fadeIn {
-      to { opacity: 1; }
+    @keyframes shimmer {
+      0% { background-position: -400% 0; }
+      100% { background-position: 400% 0; }
     }
   </style>
 </head>
-<body>
-<div class="container">
-  <h1 class="h2 text-bold mb-2">WeDirect</h1>
-  <p class="text-small color-fg-muted mb-4">Preview your destination before redirection</p>
+<body class="flex items-center justify-center min-h-screen px-4">
+  <div class="glow-ring rounded-3xl p-8 max-w-2xl w-full text-center">
+    <h1 class="text-5xl font-extrabold text-pink-600 tracking-wide">WeDirect</h1>
+    <p class="text-base text-gray-600 mt-2">You’re being smoothly redirected…✨</p>
 
-  <div id="redirectInfo" class="box d-none">
-    <div id="bannerPlaceholder" class="banner mb-3"></div>
-    <img id="banner" class="img-fluid mb-3 rounded-1 d-none fade-in" style="max-height: 180px;" />
+    <div id="redirectInfo" class="space-y-6 mt-10 hidden">
+      <div class="rounded-xl w-full h-48 shimmer" id="bannerPlaceholder"></div>
+      <img id="banner" src="" alt="Website Banner" class="rounded-xl w-full max-h-48 object-cover mx-auto hidden" />
 
-    <div class="d-flex flex-items-center mb-3">
-      <img id="favicon" src="" alt="Favicon" width="24" height="24" class="mr-2" />
-      <span id="urlText" class="text-small color-fg-accent"></span>
+      <div class="flex items-center justify-center gap-4">
+        <img id="favicon" src="" alt="Favicon" class="w-12 h-12 rounded-full border" />
+        <code id="urlText" class="text-sm text-pink-600 break-all"></code>
+      </div>
+      <div class="text-xs text-gray-500 italic">Guiding you there in <span id="count">3</span> seconds…</div>
     </div>
 
-    <div class="text-small color-fg-muted">Redirecting in <span id="counter">3</span> seconds...</div>
-    <button class="btn btn-sm mt-3" id="manualRedirect">Go Now</button>
+    <div id="fallbackPrompt" class="text-gray-600 mt-8">
+      <p class="mb-2">Paste a destination URL in the path or hash to begin your journey:</p>
+      <code class="block bg-pink-100 text-pink-600 p-2 rounded text-xs mb-1">https://wedirect.web.app/https://example.com</code>
+      <code class="block bg-pink-100 text-pink-600 p-2 rounded text-xs">https://wedirect.web.app/#https://example.com</code>
+    </div>
   </div>
 
-  <div id="fallbackMessage" class="text-small color-fg-muted"></div>
-</div>
-
-<script>
-  async function getOGImage(url) {
-    try {
-      const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
-      const data = await res.json();
-      return data?.data?.image?.url || "/image.png";
-    } catch {
-      return null;
+  <script>
+    async function getOGImage(url) {
+      try {
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
+        const data = await res.json();
+        return data?.data?.image?.url || "/image.png";
+      } catch {
+        return "/image.png";
+      }
     }
+
+    window.onload = async () => {
+      const rawPath = decodeURIComponent(window.location.pathname.slice(1));
+      const rawHash = decodeURIComponent(window.location.hash.slice(1));
+      const url = rawPath || rawHash;
+      const isValidUrl = /^https?:\/\/[^ "']+$/.test(url);
+      const redirectInfo = document.getElementById("redirectInfo");
+      const fallbackPrompt = document.getElementById("fallbackPrompt");
+
+      if (!url || !isValidUrl) return;
+
+      fallbackPrompt.style.display = "none";
+      redirectInfo.classList.remove("hidden");
+      document.getElementById("urlText").textContent = url;
+      document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
+
+      const bannerUrl = await getOGImage(url);
+      const banner = document.getElementById("banner");
+      const placeholder = document.getElementById("bannerPlaceholder");
+
+        banner.onload = () => {
+          placeholder.style.display = 'none';
+          banner.classList.remove("hidden");
+        };
+        banner.src = bannerUrl;
+
+      let count = 3;
+const countEl = document.getElementById("count");
+
+const countdown = setInterval(() => {
+  count--;
+  countEl.textContent = count;
+  if (count <= 0) {
+    clearInterval(countdown);
+            window.location.href = url;
   }
-
-  window.onload = async () => {
-    const rawPath = decodeURIComponent(window.location.pathname.slice(1));
-    const rawHash = decodeURIComponent(window.location.hash.slice(1));
-    const url = rawPath || rawHash;
-
-    const isValidUrl = /^https?:\/\/[^\s"]+$/.test(url);
-    const infoBox = document.getElementById("redirectInfo");
-    const fallback = document.getElementById("fallbackMessage");
-    const host = `${location.protocol}//${location.host}`;
-
-    if (!url) {
-      fallback.innerHTML = `
-        <div>No URL found. Use format:</div>
-        <div class="text-small color-fg-accent">${host}/https://example.com</div>
-        <div class="text-small color-fg-muted">or</div>
-        <div class="text-small color-fg-accent">${host}/#https://example.com</div>
-      `;
-      return;
-    }
-
-    if (!isValidUrl) {
-      fallback.innerHTML = `<div class='text-bold color-danger'>Invalid URL</div>`;
-      return;
-    }
-
-    infoBox.classList.remove("d-none");
-    document.getElementById("urlText").textContent = url;
-    document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
-
-    const bannerUrl = await getOGImage(url);
-    const banner = document.getElementById("banner");
-    const placeholder = document.getElementById("bannerPlaceholder");
-
-    if (bannerUrl) {
-      banner.onload = () => {
-        placeholder.classList.add("d-none");
-        banner.classList.remove("d-none");
-      };
-      banner.src = bannerUrl;
-    } else {
-      placeholder.style.background = "url('https://via.placeholder.com/600x180?text=No+Banner') center / cover no-repeat";
-    }
-
-    let seconds = 3;
-    const counter = document.getElementById("counter");
-    const countdown = setInterval(() => {
-      seconds--;
-      counter.textContent = seconds;
-      if (seconds <= 0) clearInterval(countdown);
-    }, 1000);
-
-    setTimeout(() => {
-      console.log("Test mode: redirect to", url);
-      // window.location.href = url;
-    }, 3000);
-
-    document.getElementById("manualRedirect").onclick = () => window.location.href = url;
-  };
-</script>
+}, 1000);
+    };
+  </script>
 </body>
 </html>
