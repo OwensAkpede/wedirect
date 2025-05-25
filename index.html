@@ -4,80 +4,140 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WeDirect</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@primer/css@20.8.0/dist/primer.min.css" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      padding-top: 50px;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .banner {
+          min-width: 180px;
+      height: 180px;
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      background-size: cover;
+      background-position: center;
+    }
+    .box {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 1.5rem;
+          display: flex
+;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    }
+    .text-small { font-size: 0.875rem; }
+    .fade-in {
+      animation: fadeIn 0.4s ease-in-out forwards;
+      opacity: 0;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-white via-gray-50 to-gray-100 text-gray-800 min-h-screen flex items-center justify-center">
+<body>
+<div class="container">
+  <h1 class="h2 text-bold mb-2">WeDirect</h1>
+  <p class="text-small color-fg-muted mb-4">Preview your destination before redirection</p>
 
-  <div id="app" class="w-full max-w-xl mx-auto p-6 sm:p-10 bg-white/70 backdrop-blur-lg  rounded-3xl border border-gray-200 text-center">
-    <h1 class="text-4xl font-bold text-indigo-600">WeDirect</h1>
-    <p class="mt-2 text-gray-500">Taking you where you want to go…</p>
+  <div id="redirectInfo" class="box d-none">
+    <div id="bannerPlaceholder" class="banner mb-3"></div>
+    <img id="banner" class="img-fluid mb-3 rounded-1 d-none fade-in" style="max-height: 180px;" />
 
-    <div id="redirectInfo" class="mt-8 space-y-6 hidden">
-      <img id="banner" src="" alt="Banner" class="rounded-xl shadow-lg w-full max-h-40 object-cover mx-auto" />
-      <div class="flex items-center justify-center gap-4">
-        <img id="favicon" src="" alt="Favicon" class="w-10 h-10 rounded-md shadow" />
-        <p id="urlText" class="text-indigo-500 font-medium break-all text-sm sm:text-base"></p>
-      </div>
-      <div class="text-xs text-gray-400 animate-pulse">Redirecting in 3 seconds...</div>
+    <div class="d-flex flex-items-center mb-3">
+      <img id="favicon" src="" alt="Favicon" width="24" height="24" class="mr-2" />
+      <span id="urlText" class="text-small color-fg-accent"></span>
     </div>
+
+    <div class="text-small color-fg-muted">Redirecting in <span id="counter">3</span> seconds...</div>
+    <button class="btn btn-sm mt-3" id="manualRedirect">Go Now</button>
   </div>
 
-  <script>
-    async function getOGImage(url) {
-      try {
-        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
-        const data = await res.json();
-        console.log(data);
-        
-        return data?.data?.image?.url;
-      } catch {
-        return null;
-      }
+  <div id="fallbackMessage" class="text-small color-fg-muted"></div>
+</div>
+
+<script>
+  async function getOGImage(url) {
+    try {
+      const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
+      const data = await res.json();
+      return data?.data?.image?.url || "/image.png";
+    } catch {
+      return null;
+    }
+  }
+
+  window.onload = async () => {
+    const rawPath = decodeURIComponent(window.location.pathname.slice(1));
+    const rawHash = decodeURIComponent(window.location.hash.slice(1));
+    const url = rawPath || rawHash;
+
+    const isValidUrl = /^https?:\/\/[^\s"]+$/.test(url);
+    const infoBox = document.getElementById("redirectInfo");
+    const fallback = document.getElementById("fallbackMessage");
+    const host = `${location.protocol}//${location.host}`;
+
+    if (!url) {
+      fallback.innerHTML = `
+        <div>No URL found. Use format:</div>
+        <div class="text-small color-fg-accent">${host}/https://example.com</div>
+        <div class="text-small color-fg-muted">or</div>
+        <div class="text-small color-fg-accent">${host}/#https://example.com</div>
+      `;
+      return;
     }
 
-    window.onload = async () => {
-      const rawPath = decodeURIComponent(window.location.pathname.slice(1));
-      const rawHash = decodeURIComponent(window.location.hash.slice(1));
-      const url = rawPath || rawHash;
+    if (!isValidUrl) {
+      fallback.innerHTML = `<div class='text-bold color-danger'>Invalid URL</div>`;
+      return;
+    }
 
-      const isValidUrl = /^https?:\/\/[^ "]+$/.test(url);
+    infoBox.classList.remove("d-none");
+    document.getElementById("urlText").textContent = url;
+    document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
 
-      const app = document.getElementById("app");
+    const bannerUrl = await getOGImage(url);
+    const banner = document.getElementById("banner");
+    const placeholder = document.getElementById("bannerPlaceholder");
 
-      if (!url) {
-        app.innerHTML = `
-          <h1 class="text-4xl font-bold text-indigo-600">WeDirect</h1>
-          <p class="mt-2 text-gray-500">Paste a full URL into the path or hash:</p>
-          <code class="block mt-4 bg-indigo-50 text-indigo-600 p-2 rounded-md text-sm">http://${location.host}/https://example.com</code>
-          <p class="text-sm text-gray-400 mt-2">or</p>
-          <code class="block mt-1 bg-indigo-50 text-indigo-600 p-2 rounded-md text-sm">http://${location.host}/#https://example.com</code>
-        `;
-        return;
-      }
+    if (bannerUrl) {
+      banner.onload = () => {
+        placeholder.classList.add("d-none");
+        banner.classList.remove("d-none");
+      };
+      banner.src = bannerUrl;
+    } else {
+      placeholder.style.background = "url('https://via.placeholder.com/600x180?text=No+Banner') center / cover no-repeat";
+    }
 
-      if (!isValidUrl) {
-        app.innerHTML = `
-          <h1 class="text-4xl font-bold text-red-500">Invalid URL</h1>
-          <p class="mt-2 text-gray-500">Must start with http:// or https://</p>
-        `;
-        return;
-      }
+    let seconds = 3;
+    const counter = document.getElementById("counter");
+    const countdown = setInterval(() => {
+      seconds--;
+      counter.textContent = seconds;
+      if (seconds <= 0) clearInterval(countdown);
+    }, 1000);
 
-      document.getElementById("redirectInfo").classList.remove("hidden");
-      document.getElementById("urlText").textContent = url;
-      document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
+    setTimeout(() => {
+      console.log("Test mode: redirect to", url);
+      // window.location.href = url;
+    }, 3000);
 
-      const bannerUrl = await getOGImage(url);
-      document.getElementById("banner").src = bannerUrl || "https://via.placeholder.com/600x150?text=Preview+Unavailable";
-
-      setTimeout(() => {
-        // window.location.href = url;
-      }, 3000);
-    };
-  </script>
+    document.getElementById("manualRedirect").onclick = () => window.location.href = url;
+  };
+</script>
 </body>
 </html>
