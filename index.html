@@ -1,113 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WeDirect</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
-    * {
-      font-family: 'Outfit', sans-serif;
-    }
     body {
+      font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at 50% 20%, #ffffff, #e0f7fa, #fce4ec);
       background-attachment: fixed;
       animation: pulseBG 20s ease-in-out infinite;
       color: #3e3e3e;
     }
-    @keyframes pulseBG {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.03); }
+
+    .banner-cover {
+      height: 200px;
+      display: flex;
     }
+
+    @keyframes pulseBG {
+
+      0%,
+      100% {
+        filter: brightness(1);
+      }
+
+      50% {
+        filter: brightness(1.03);
+      }
+    }
+
     .glow-ring {
       border: 2px solid rgba(255, 255, 255, 0.3);
       background: rgba(255, 255, 255, 0.5);
       backdrop-filter: blur(12px);
       transition: all 0.3s ease-in-out;
     }
+
     .shimmer {
       background: linear-gradient(90deg, #ffffff 25%, #f0f0f0 50%, #ffffff 75%);
       background-size: 400% 100%;
       animation: shimmer 2s infinite;
     }
+
     @keyframes shimmer {
-      0% { background-position: -400% 0; }
-      100% { background-position: 400% 0; }
+      0% {
+        background-position: -400% 0;
+      }
+
+      100% {
+        background-position: 400% 0;
+      }
+    }
+    .shimmer img {
+      opacity: 0;
     }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen px-4">
-  <div class="glow-ring rounded-3xl p-8 max-w-2xl w-full text-center">
-    <h1 class="text-5xl font-extrabold text-pink-600 tracking-wide">WeDirect</h1>
-    <p class="text-base text-gray-600 mt-2">You’re being smoothly redirected…✨</p>
 
-    <div id="redirectInfo" class="space-y-6 mt-10 hidden">
-      <div class="rounded-xl w-full h-48 shimmer" id="bannerPlaceholder"></div>
-      <img id="banner" src="" alt="Website Banner" class="rounded-xl w-full max-h-48 object-cover mx-auto hidden" />
+<body
+  class="bg-gradient-to-br from-pink-200 via-blue-200 to-purple-200 min-h-screen flex items-center justify-center p-4">
 
-      <div class="flex items-center justify-center gap-4">
-        <img id="favicon" src="" alt="Favicon" class="w-12 h-12 rounded-full border" />
-        <code id="urlText" class="text-sm text-pink-600 break-all"></code>
-      </div>
-      <div class="text-xs text-gray-500 italic">Guiding you there in <span id="count">3</span> seconds…</div>
+
+
+
+  <div id="redirectInfo" class="bg-white shadow-2xl rounded-3xl p-8 sm:p-12 w-full max-w-2xl text-center hidden">
+    <h1 class="text-5xl sm:text-6xl font-bold text-pink-600 mb-4">WeDirect</h1>
+    <p class="text-gray-600 text-lg mb-8">
+      You're being smoothly redirected... <span class="material-icons align-middle text-yellow-500">api</span>
+    </p>
+    <div class="rounded-2xl overflow-hidden shadow-lg mb-8 banner-cover shimmer" id="bannerCover">
+      <img id="banner" alt="Redirection visual banner" class="w-full h-auto object-cover"/>
     </div>
-
-    <div id="fallbackPrompt" class="text-gray-600 mt-8">
-      <p class="mb-2">Paste a destination URL in the path or hash to begin your journey:</p>
-      <code class="block bg-pink-100 text-pink-600 p-2 rounded text-xs mb-1">https://wedirect.web.app/https://example.com</code>
-      <code class="block bg-pink-100 text-pink-600 p-2 rounded text-xs">https://wedirect.web.app/#https://example.com</code>
+    <div class="flex items-center justify-center space-x-3 bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8">
+      <img alt="External site icon" id="favicon" class="w-8 h-8"
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBModCrj1YYW6myZTnUrm6EvT0VCA6cLl6A-sAFh06gP9ArKp2N4kC0RCcwM_O5beZrB7uI9j53QD-k9xyjJ-4Mpi9b8yCXfdjgd0mO8z-XuvcNRqJhf77SQldejp2LNlkEOXMdRq8sDQhassbAQSf5PVWHK4Ccs-pVzek7VnEProAGKZLwHW-bQqWnZNE32qlELTvhRJlAcsxZD_ByZJsiZN7Pt3qKdMP9Cy1B8Hm2rz5-8ot5SdfO70WB1nFInavR8niax3lUzjaw" />
+      <a id="urlText" class="text-sm text-pink-600 hover:text-pink-700 hover:underline truncate"
+        href="blank" rel="noopener noreferrer" target="_blank">
+      ...  
+      </a>
     </div>
+    <p class="text-gray-500 text-sm">
+      Guiding you there in <span class="font-semibold text-pink-600" id="countdown">3</span> seconds...
+    </p>
+  </div>
+  <div id="fallbackPrompt" class="text-gray-600 mt-8 hidden">
+    <div class="rounded-2xl overflow-hidden shadow-lg mb-8 banner-cover">
+      <img alt="Redirection visual banner" class="w-full h-auto object-cover" src="/image.png"/>
+    </div>
+    <p class="mb-2">Paste a destination URL in the path or hash to begin your journey:</p>
+    <code
+      class="block bg-pink-100 text-pink-600 p-2 rounded text-xs mb-1">https://wedirect.web.app/https://example.com</code>
+    <code
+      class="block bg-pink-100 text-pink-600 p-2 rounded text-xs">https://wedirect.web.app/#https://example.com</code>
   </div>
 
+
   <script>
+    const defaultBanner = "https://lh3.googleusercontent.com/aida-public/AB6AXuCvQBswu2VuyyKNOAf_4hqrYhLOeFOA1Xlmlk69n3ljlEpHRz_G_Q3V7VARAWVedxbN9ySD2t3XBHZA3qvbvWm70gI8WUeP6TOgnoxRqdN0vOcD8v81zmvo9U0S79y3oos6_0qeteq6IAuS6HYAc_-Xi79L4ZxOeOxWh6nwts_5HqoCMMJ_nE1fZIxghKcUdJH1T08VY4RayFGhr-gVkdF1A7eAaTjprXJRAE-fpr7150EY5Dcn1y2d2vhYBgaaGlDTAs2kWBPDWUfs";
+    const defaultfavicon = "https://lh3.googleusercontent.com/aida-public/AB6AXuBModCrj1YYW6myZTnUrm6EvT0VCA6cLl6A-sAFh06gP9ArKp2N4kC0RCcwM_O5beZrB7uI9j53QD-k9xyjJ-4Mpi9b8yCXfdjgd0mO8z-XuvcNRqJhf77SQldejp2LNlkEOXMdRq8sDQhassbAQSf5PVWHK4Ccs-pVzek7VnEProAGKZLwHW-bQqWnZNE32qlELTvhRJlAcsxZD_ByZJsiZN7Pt3qKdMP9Cy1B8Hm2rz5-8ot5SdfO70WB1nFInavR8niax3lUzjaw";
+    let bannerUrl ;
+    let faviconUrl;
+
     async function getOGImage(url) {
       try {
         const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=false`);
         const data = await res.json();
-        return data?.data?.image?.url || "/image.png";
+        // console.log(data);
+        
+        bannerUrl = data?.data?.image?.url || "/image.png";
+        faviconUrl = data?.data?.logo?.url;
+        return bannerUrl;
       } catch {
         return "/image.png";
       }
     }
 
-    window.onload = async () => {
+    ;(async () => {
       const rawPath = decodeURIComponent(window.location.pathname.slice(1));
       const rawHash = decodeURIComponent(window.location.hash.slice(1));
+
       const url = rawPath || rawHash;
       const isValidUrl = /^https?:\/\/[^ "']+$/.test(url);
       const redirectInfo = document.getElementById("redirectInfo");
       const fallbackPrompt = document.getElementById("fallbackPrompt");
+      const bannerCover = document.getElementById("bannerCover");
 
-      if (!url || !isValidUrl) return;
+      if (!url || !isValidUrl) {
+      fallbackPrompt.classList.remove("hidden");
 
-      fallbackPrompt.style.display = "none";
+        return;
+      }
+
       redirectInfo.classList.remove("hidden");
-      document.getElementById("urlText").textContent = url;
-      document.getElementById("favicon").src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
-
-      const bannerUrl = await getOGImage(url);
+      const favicon = document.getElementById("favicon");
       const banner = document.getElementById("banner");
-      const placeholder = document.getElementById("bannerPlaceholder");
+      const urlText = document.getElementById("urlText");
 
-        banner.onload = () => {
-          placeholder.style.display = 'none';
-          banner.classList.remove("hidden");
-        };
-        banner.src = bannerUrl;
+      urlText.textContent = url;
+      urlText.href = url;
 
-      let count = 3;
-const countEl = document.getElementById("count");
+      favicon.src = `https://www.google.com/s2/favicons?sz=64&domain_url=${url}`;
 
-const countdown = setInterval(() => {
-  count--;
-  countEl.textContent = count;
-  if (count <= 0) {
-    clearInterval(countdown);
+      await getOGImage(url);
+
+      banner.src = bannerUrl||defaultBanner;
+      faviconUrl&&(favicon.src = faviconUrl);
+
+      bannerCover.classList.remove("shimmer");
+
+      let count = 5;
+      const countEl = document.getElementById("countdown");
+      countEl.textContent = count;
+
+      const countdown = setInterval(() => {
+        count--;
+        countEl.textContent = count;
+        if (count <= 0) {
+          clearInterval(countdown);
+          if (location.hostname.match(/wedirect\.web\.app/)) {
+            // If on wedirect.web.app, redirect to the original URL
             window.location.href = url;
-  }
-}, 1000);
-    };
+          }
+        }
+      }, 1000);
+    })();
   </script>
 </body>
+
 </html>
